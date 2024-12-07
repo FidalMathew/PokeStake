@@ -3,27 +3,44 @@ import {pokemonData} from "./lib/data";
 import {Card, CardContent} from "./components/ui/card";
 import {useState} from "react";
 import {Button} from "./components/ui/button";
+import {useParams} from "react-router-dom";
+import useGlobalContext from "./context/useGlobalContext";
+import AsyncQueue from "./mpc-hello/src/AsyncQueue";
 
 export default function GameId() {
   const [selectedPokemon, setSelectedPokemon] = useState<number | null>(null);
+  const params = useParams();
+  const {app} = useGlobalContext();
+
+  const check = () => {
+    console.log(app, "check");
+  };
 
   return (
     <div className="h-screen w-full p-4">
       <div className="w-full h-[100px]">
         <h1 className="text-3xl font-semibold flex justify-center items-center">
-          Room Id
+          Room Id: &nbsp;<span className="font-normal">{params.gameId}</span>
         </h1>
       </div>
       <Formik
         initialValues={{pokemonId: 0}}
         onSubmit={(values) => {
           console.log(pokemonData[values.pokemonId - 1]);
+          (async function () {
+            const ans = await app.mpcLargest(
+              pokemonData[values.pokemonId - 1].hp
+            );
+            console.log(ans, "ans");
+
+            app.msgQueue = new AsyncQueue<unknown>();
+          })();
         }}
       >
         {({errors, touched, setFieldValue}) => (
           <Form className="w-full h-full flex justify-start items-center flex-col">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-10">
-              {pokemonData.map((pokemon, index) => (
+              {pokemonData.map((_, index) => (
                 <Card
                   className={`w-full cursor-pointer transition-all ${
                     selectedPokemon === index + 1
@@ -85,6 +102,8 @@ export default function GameId() {
           </Form>
         )}
       </Formik>
+
+      <Button onClick={check}>Check</Button>
 
       {/* <div className="h-screen w-full bg-yellow-100 py-4">
         <div className="h-[400px] w-full">

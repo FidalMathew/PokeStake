@@ -1,13 +1,20 @@
-import { createContext, ReactNode, useState } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import App from "@/mpc-hello/src/App";
+import {createContext, ReactNode, useState} from "react";
 
 interface GlobalContextProps {
   someValue: string; // Define the data or state to share via context
   setSomeValue: (value: string) => void; // Define the function to update the state
+  app: any;
 }
 
-export const GlobalContext = createContext<GlobalContextProps | undefined>(
-  undefined
-);
+const app = new App();
+
+export const GlobalContext = createContext<GlobalContextProps>({
+  someValue: "defaultValue",
+  setSomeValue: () => {},
+  app: app,
+});
 
 export default function GlobalContextProvider({
   children,
@@ -21,6 +28,7 @@ export default function GlobalContextProvider({
       value={{
         someValue,
         setSomeValue,
+        app,
       }}
     >
       {children}

@@ -1,83 +1,154 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {Card, CardContent} from "./components/ui/card";
-import {ArrowRight, Plus} from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "./components/ui/card";
+import {ArrowRight, LogIn, Plus, PlusCircle} from "lucide-react";
 import {pokemonData} from "./lib/data";
 import {Field, Form, Formik} from "formik";
 import {Button} from "./components/ui/button";
 import App from "./mpc-hello/src/App";
 import {useNavigate} from "react-router-dom";
+import {Input} from "./components/ui/input";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {useState} from "react";
+import {Label} from "./components/ui/label";
+import useGlobalContext from "./context/useGlobalContext";
+
 export default function Game() {
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+
+  const {app} = useGlobalContext();
+
+  const check = () => {
+    console.log(app, "check");
+  };
+
   return (
-    <div>
-      <div className="h-screen w-full py-4">
-        <div className="h-full w-full flex justify-center items-center">
-          <div className="flex items-center justify-center flex-col lg:flex-row  gap-6 px-10 w-full">
-            <Card
-              className={`w-full cursor-pointer transition-all "hover:ring-2 hover:ring-primary/50 flex items-center justify-center`}
-              onClick={() => {
-                // setFieldValue("pokemonId", index + 1);
-                // setSelectedPokemon(index + 1);
-                // createRoomFunc();
+    <div className="h-screen w-full flex justify-center items-center">
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Stake amount to play</DialogTitle>
+            <DialogDescription>
+              <Formik
+                initialValues={{stakeAmount: 0}}
+                onSubmit={(values) => {
+                  console.log(values);
+                  (async function () {
+                    const code = App.generateJoiningCode();
+                    console.log(code, "code");
+                    await app.connect(code, "alice");
+                    navigate(`/game/${code}`);
+                  })();
+                }}
+              >
+                {(formik) => (
+                  <Form>
+                    <div className="my-5 flex flex-col gap-2">
+                      <Label htmlFor="stakeAmount">Stake Amount</Label>
+                      <Field
+                        as={Input}
+                        name="stakeAmount"
+                        type="number"
+                        placeholder="Enter stake amount"
+                        className="w-full focus-visible:ring-0"
+                        id="stakeAmount"
+                      />
+                    </div>
 
-                const code = App.generateJoiningCode();
+                    <Button type="submit" variant="outline" className="w-full">
+                      <span>Proceed</span>
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Form>
+                )}
+              </Formik>
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
 
-                navigate(`/game/${code}`);
-              }}
-            >
-              <CardContent className="p-6">
-                <div className="text-center m-auto">
-                  <Plus className="w-28 h-28 font-light mx-auto mb-4" />
-                  <h2 className="text-xl font-bold mb-2">{`Create a Room`}</h2>
-                  {/* <p className="text-sm text-muted-foreground mb-2">
-                      Type: {pokemonData[index].type}
-                    </p> */}
-                </div>
-              </CardContent>
-            </Card>
+      <div className="flex flex-col md:flex-row gap-6 items-stretch max-w-3xl mx-auto p-6">
+        <Button onClick={check}>Check</Button>
+        <Card className="flex-1">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold">
+              Create a Gaming Room
+            </CardTitle>
+            <CardDescription>
+              Start a new gaming session and invite your friends
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Create a unique room for your gaming session. You'll receive a
+              code to share with your friends.
+            </p>
+          </CardContent>
+          <CardFooter>
+            <Button className="w-full" onClick={() => setOpen(true)}>
+              <PlusCircle className="mr-2 h-4 w-4" /> Stake and Create Room
+            </Button>
+          </CardFooter>
+        </Card>
 
-            <Card
-              className={`w-full cursor-pointer transition-all "hover:ring-2 hover:ring-primary/50 flex items-center justify-center h-full`}
-              onClick={() => {
-                // setFieldValue("pokemonId", index + 1);
-                // setSelectedPokemon(index + 1);
-                // createRoomFunc();
-              }}
-            >
-              <CardContent className="p-6 w-full h-full">
-                <div className="text-center flex justify-center items-center gap-7 flex-col">
-                  <Formik initialValues={{roomId: ""}} onSubmit={() => {}}>
-                    {(_formik) => (
-                      <Form className="w-full">
-                        <div className="flex items-center gap-4">
-                          <Field
-                            name="roomId"
-                            type="text"
-                            placeholder="Room ID"
-                            className="w-full p-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                            id="roomId"
-                          />
-
-                          <Button
-                            size={"icon"}
-                            type="submit"
-                            className="w-12 h-10"
-                          >
-                            <ArrowRight />
-                          </Button>
-                        </div>
-                      </Form>
-                    )}
-                  </Formik>
-                  <p className="text-xl font-bold mb-2">{`Join a Room`}</p>
-                  {/* <p className="text-sm text-muted-foreground mb-2">
-                      Type: {pokemonData[index].type}
-                    </p> */}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        <Card className="flex-1">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold">
+              Join a Gaming Room
+            </CardTitle>
+            <CardDescription>
+              Enter a room code to join an existing session
+            </CardDescription>
+          </CardHeader>
+          <Formik
+            initialValues={{roomCode: ""}}
+            onSubmit={(values, _) => {
+              (async function () {
+                console.log(values);
+                await app.connect(values.roomCode, "bob");
+                navigate(`/game/${values.roomCode}`);
+              })();
+            }}
+          >
+            {(formik) => (
+              <Form>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Have a room code? Enter it below to join your friends'
+                    gaming session.
+                  </p>
+                  <Field
+                    as={Input}
+                    placeholder="Enter room code"
+                    className="mb-4"
+                    name="roomCode"
+                    id="roomCode"
+                  />
+                </CardContent>
+                <CardFooter>
+                  <Button className="w-full" type="submit">
+                    <LogIn className="mr-2 h-4 w-4" /> Join Room
+                  </Button>
+                </CardFooter>
+              </Form>
+            )}
+          </Formik>
+        </Card>
       </div>
     </div>
   );
