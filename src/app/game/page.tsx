@@ -124,7 +124,7 @@ export default function Home() {
         </div>
       )} */}
 
-      <div className="h-full w-1/4 bg-purple-100">
+      <div className="mt-24 h-fit w-full bg-purple-100">
         <div className="flex gap-4">
           <Button
             onClick={async () => {
