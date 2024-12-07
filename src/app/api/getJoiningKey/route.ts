@@ -1,9 +1,9 @@
-import App from "@/mpc/src/App";
-
-export async function GET() {
+export async function POST(request: Request, response : Response) {
     try {
-        const code = App.generateJoiningCode();
-        return new Response(JSON.stringify(code), { status: 200 });
+
+        const body = await request.json();
+       
+        return new Response(JSON.stringify(body), { status: 200 });
     } catch (e) {
         console.error("Error joining room:", e);
 

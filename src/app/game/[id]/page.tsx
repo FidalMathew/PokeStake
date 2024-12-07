@@ -1,7 +1,7 @@
 "use client";
-import {useState, useEffect} from "react";
-import {pokemonData} from "@/lib/data";
-import {Card, CardContent} from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { pokemonData } from "@/lib/data";
+import { Card, CardContent } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
 import {
   useLocalAudio,
@@ -9,13 +9,13 @@ import {
   useLocalVideo,
   useRoom,
 } from "@huddle01/react/hooks";
-import {Audio, Video} from "@huddle01/react/components";
-import {useLocalMedia} from "@huddle01/react/hooks";
+import { Audio, Video } from "@huddle01/react/components";
+import { useLocalMedia } from "@huddle01/react/hooks";
 import ShowPeers from "@/components/ShowPeer";
-import {Button} from "@/components/ui/button";
-import {Formik, Form, Field} from "formik";
+import { Button } from "@/components/ui/button";
+import { Formik, Form, Field } from "formik";
 import HuddleComponent from "@/components/HuddleComponent";
-import {useParams} from "next/navigation";
+import { useParams } from "next/navigation";
 
 export default function GameId() {
   const params = useParams();
@@ -33,7 +33,7 @@ export default function GameId() {
   //   setSelectedPokemon(id);
   // };
 
-  const {joinRoom, leaveRoom} = useRoom({
+  const { joinRoom, leaveRoom } = useRoom({
     onJoin: () => {
       console.log("Joined the room");
     },
@@ -54,10 +54,10 @@ export default function GameId() {
     disableAudio,
     isAudioOn,
   } = useLocalAudio();
-  const {startScreenShare, stopScreenShare, shareStream} =
+  const { startScreenShare, stopScreenShare, shareStream } =
     useLocalScreenShare();
 
-  const {fetchStream} = useLocalMedia();
+  const { fetchStream } = useLocalMedia();
 
   const [accessToken, setAccessToken] = useState("");
 
@@ -67,7 +67,7 @@ export default function GameId() {
       const res = await fetch(`/api/token?roomId=${roomId}`);
       const data = await res.text();
 
-      console.info({data});
+      console.info({ data });
 
       setAccessToken(data as string);
     };
@@ -85,12 +85,12 @@ export default function GameId() {
     <div className="h-[200vh] mx-auto">
       <Navbar />
       <Formik
-        initialValues={{pokemonId: 0}}
+        initialValues={{ pokemonId: 0 }}
         onSubmit={(values) => {
           console.log(pokemonData[values.pokemonId - 1]);
         }}
       >
-        {({errors, touched, setFieldValue}) => (
+        {({ errors, touched, setFieldValue }) => (
           <Form>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-10">
               {pokemonData.map((pokemon, index) => (

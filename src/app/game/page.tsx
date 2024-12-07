@@ -1,6 +1,6 @@
 "use client";
-import {pokemonData} from "@/lib/data";
-import {Card, CardContent} from "@/components/ui/card";
+import { pokemonData } from "@/lib/data";
+import { Card, CardContent } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
 import {
   Dialog,
@@ -10,13 +10,29 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {Plus} from "lucide-react";
-import {useState} from "react";
-import {Formik} from "formik";
+import { Plus } from "lucide-react";
+import { useState } from "react";
+import { Formik } from "formik";
 
 export default function Home() {
   // create room
-  const createRoomFunc = () => {};
+
+  const [roomId, setRoomId] = useState("");
+
+  const createRoomFunc = async () => {
+    const res = await fetch("/api/createRoom", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
+
+    const data = await res.json();
+    console.log(data, "res");
+
+    setRoomId(data.data.roomId);
+  };
 
   const [open, setOpen] = useState(false);
 
@@ -43,6 +59,7 @@ export default function Home() {
               onClick={() => {
                 // setFieldValue("pokemonId", index + 1);
                 // setSelectedPokemon(index + 1);
+                createRoomFunc();
               }}
             >
               <CardContent className="p-6">
