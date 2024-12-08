@@ -1,19 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import App from "@/mpc-hello/src/App";
-import {createContext, ReactNode, useState} from "react";
+import { createContext, ReactNode } from "react";
+import { ethers } from "ethers";
+
+import abi from "@/lib/abi.json";
 
 interface GlobalContextProps {
-  someValue: string; // Define the data or state to share via context
-  setSomeValue: (value: string) => void; // Define the function to update the state
   app: any;
+  createGame: () => Promise<void>;
+  endGame: () => Promise<void>;
 }
 
 const app = new App();
 
+// pnpm i
+
 export const GlobalContext = createContext<GlobalContextProps>({
-  someValue: "defaultValue",
-  setSomeValue: () => {},
   app: app,
+  createGame: async () => {},
+  endGame: async () => {},
 });
 
 export default function GlobalContextProvider({
@@ -21,14 +26,47 @@ export default function GlobalContextProvider({
 }: {
   children: ReactNode;
 }) {
-  const [someValue, setSomeValue] = useState("defaultValue"); // Example state
+  const provider = new ethers.JsonRpcProvider(
+    "https://polygon-amoy-bor-rpc.publicnode.com"
+  );
+
+  // 2. Wallet setup using your private key
+  const privateKey = import.meta.env.VITE_PRIVATE_KEY as string;
+  const wallet = new ethers.Wallet(privateKey, provider);
+
+  // 3. Contract setup
+
+  const contractAddress = "YOUR_CONTRACT_ADDRESS";
+  const contract = new ethers.Contract(contractAddress, abi, wallet);
+
+  const createGame = async () => {
+    try {
+      const res = await contract.createGame();
+      console.log(res);
+
+      await res.wait();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const endGame = async () => {
+    try {
+      const res = await contract.endGame();
+      console.log(res);
+
+      await res.wait();
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <GlobalContext.Provider
       value={{
-        someValue,
-        setSomeValue,
         app,
+        createGame,
+        endGame,
       }}
     >
       {children}
