@@ -1,16 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import App from "@/mpc-hello/src/App";
 import { createContext, ReactNode, useState } from "react";
-import { useOkto, type OktoContextType, type User, type Portfolio } from "okto-sdk-react";
-import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
+import {
+  useOkto,
+  type OktoContextType,
+  type User,
+  type Portfolio,
+  WalletData,
+} from "okto-sdk-react";
 import { ethers } from "ethers";
 import abi from "../lib/abi.json";
-;
-
 interface GlobalContextProps {
   app: any;
-  createGame: () => Promise<void>;
-  endGame: () => Promise<void>;
+  createGame: (stakeAmount: any, meetingId: number) => Promise<void>;
+  endGame: (matchId: number, _winner: `0x${string}`) => Promise<void>;
+  getAllMatches: () => Promise<void>;
+  getStakeAmountByMatchId: (matchId: any) => Promise<void>;
+  joinGame: (from: any, stakeAmount: any, matchId: any) => Promise<void>;
+  getWalletsForUser: () => Promise<undefined | WalletData>;
+  getBalance: () => Promise<void>;
 }
 
 const app = new App();
@@ -21,6 +29,11 @@ export const GlobalContext = createContext<GlobalContextProps>({
   app: app,
   createGame: async () => {},
   endGame: async () => {},
+  getAllMatches: async () => {},
+  getStakeAmountByMatchId: async () => {},
+  joinGame: async () => {},
+  getWalletsForUser: async () => "",
+  getBalance: async () => {},
 });
 
 export default function GlobalContextProvider({
@@ -28,31 +41,16 @@ export default function GlobalContextProvider({
 }: {
   children: ReactNode;
 }) {
-  const [someValue, setSomeValue] = useState("defaultValue");
-  const { authenticate, createWallet } = useOkto()!;
   const { getPortfolio } = useOkto() as OktoContextType;
-  const { executeRawTransaction, getRawTransactionStatus } = useOkto() as OktoContextType;
+  const { executeRawTransaction, getRawTransactionStatus } =
+    useOkto() as OktoContextType;
   const { readContractData } = useOkto() as OktoContextType;
   const { getWallets } = useOkto() as OktoContextType;
-
-  const [authToken, setAuthToken] = useState<string | null>(null);
 
   const networkName = "POLYGON_TESTNET_AMOY";
   const contractAddress = "0xF805642EfCC637e1665585dF12370b4Cc437E6df";
 
-  const handleGoogleLogin = async (credentialResponse: CredentialResponse) => {
-    const idToken = credentialResponse.credential;
-    authenticate(idToken!, (authResponse: { auth_token: string } | null, error: any) => {
-      if (authResponse) {
-        setAuthToken(authResponse.auth_token);
-        console.log("Authenticated successfully, auth token:", authResponse.auth_token);
-      } else if (error) {
-        console.error("Authentication error:", error);
-      }
-    });
-  };
-
-  const iface = new ethers.Interface(abi)
+  const iface = new ethers.Interface(abi);
 
   const getAllMatches = async () => {
     try {
@@ -61,7 +59,7 @@ export default function GlobalContextProvider({
         contractAddress: contractAddress,
         abi: abi[7],
         args: undefined,
-      }
+      };
       const result = await readContractData(networkName, contractData);
 
       // Log the result
@@ -83,7 +81,7 @@ export default function GlobalContextProvider({
         contractAddress: contractAddress,
         abi: abi[10],
         args: [matchId],
-      }
+      };
       const result = await readContractData(networkName, contractData);
 
       // Log the result
@@ -96,7 +94,7 @@ export default function GlobalContextProvider({
       console.error("Error reading contract:", error);
       throw error; // Optionally re-throw the error to handle it upstream
     }
-  }
+  };
   const joinGame = async (from: any, stakeAmount: any, matchId: any) => {
     try {
       // Define the transaction data
@@ -127,27 +125,27 @@ export default function GlobalContextProvider({
   };
 
   const getWalletsForUser = async () => {
-    getWallets()
-      .then((result: any) => {
-        console.log('Wallets:', result);
-      }
-      )
-      .catch((error: any) => {
-        console.log('Error reading contract:', error);
-      });
-  }
+    try {
+      console.log("getWalletsForUser");
+
+      const res = await getWallets();
+      console.log(res, "aryan");
+
+      return res;
+    } catch (error) {
+      console.error("Error fetching wallets:", error);
+    }
+  };
 
   const getBalance = async () => {
     getPortfolio()
       .then((result: any) => {
-        console.log(result)
+        console.log(result);
       })
       .catch((error: any) => {
         console.error(`error:`, error);
       });
-  }
-
-
+  };
 
   // Example state
   const provider = new ethers.JsonRpcProvider(
@@ -162,9 +160,15 @@ export default function GlobalContextProvider({
 
   const contract = new ethers.Contract(contractAddress, abi, wallet);
 
-  const createGame = async () => {
+  const createGame = async (stakeAmount: string, meetingId: Number) => {
     try {
-      const res = await contract.createGame();
+      console.log("dsadsadsadsdasdasdasdsadasdsady8asudo8yas89dy8oa");
+      // convert stakeAmt to wei
+      const stakeAmt = ethers.parseEther(stakeAmount.toString());
+
+      console.log(stakeAmt, "stakeAmt");
+
+      const res = await contract.createGame(stakeAmt, meetingId);
       console.log(res);
 
       await res.wait();
@@ -173,9 +177,9 @@ export default function GlobalContextProvider({
     }
   };
 
-  const endGame = async () => {
+  const endGame = async (matchId: number, _winner: `0x${string}`) => {
     try {
-      const res = await contract.endGame();
+      const res = await contract.endGame(matchId, _winner);
       console.log(res);
 
       await res.wait();
@@ -190,11 +194,14 @@ export default function GlobalContextProvider({
         app,
         createGame,
         endGame,
+        getAllMatches,
+        getStakeAmountByMatchId,
+        joinGame,
+        getWalletsForUser,
+        getBalance,
       }}
     >
       {children}
     </GlobalContext.Provider>
   );
 }
-
-

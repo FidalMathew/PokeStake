@@ -1,6 +1,42 @@
+import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { Button } from "./components/ui/button";
+import useGlobalContext from "./context/useGlobalContext";
+import { useEffect, useState } from "react";
+import { useOkto } from "okto-sdk-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
+  // const {  } = useGlobalContext();
+  const { authenticate, createWallet } = useOkto()!;
+
+  const handleGoogleLogin = async (credentialResponse: CredentialResponse) => {
+    const idToken = credentialResponse.credential;
+    authenticate(
+      idToken!,
+      (authResponse: { auth_token: string } | null, error: any) => {
+        if (authResponse) {
+          setAuthToken(authResponse.auth_token);
+          console.log(
+            "Authenticated successfully, auth token:",
+            authResponse.auth_token
+          );
+        } else if (error) {
+          console.error("Authentication error:", error);
+        }
+      }
+    );
+  };
+
+  const [authToken, setAuthToken] = useState<string | null>(null);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (authToken) {
+      navigate("/game");
+    }
+  }, [authToken]);
+
   return (
     <div className="relative bg-gradient-to-r from-red-500 to-yellow-500 text-white overflow-hidden h-screen">
       {/* Left SVG */}
@@ -27,14 +63,23 @@ export default function Home() {
 
       {/* Overlaying Text */}
       <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/50 to-transparent text-center py-4">
-        <h2 className="text-2xl font-bold tracking-wider">Discover the World of Pokémon</h2>
+        <h2 className="text-2xl font-bold tracking-wider">
+          Discover the World of Pokémon
+        </h2>
       </div>
 
       <div className="container mx-auto px-4 py-20 flex flex-col md:flex-row items-center justify-between relative z-10">
         <div className="md:w-1/2 mb-8 md:mb-0">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4">Welcome to PokéExplorer</h1>
-          <p className="text-xl mb-6">Embark on a journey to explore, discover, and learn about your favorite Pokémon</p>
-          <Button size="lg" variant="secondary">Start Your Adventure</Button>
+          <h1 className="text-4xl md:text-6xl font-bold mb-4">
+            Welcome to PokéExplorer
+          </h1>
+          <p className="text-xl mb-6">
+            Embark on a journey to explore, discover, and learn about your
+            favorite Pokémon
+          </p>
+          <Button size="lg" variant="secondary">
+            Start Your Adventure
+          </Button>
         </div>
         <div className="md:w-1/2 flex justify-center">
           <img
@@ -42,6 +87,16 @@ export default function Home() {
             alt="Pikachu"
             className="w-full max-w-md rounded-full border-4 border-white shadow-lg"
           />
+
+          <h1>Login</h1>
+          {!authToken ? (
+            <GoogleLogin
+              onSuccess={handleGoogleLogin}
+              onError={() => console.error("Login Failed")}
+            />
+          ) : (
+            <p>Authenticated</p>
+          )}
         </div>
       </div>
     </div>
