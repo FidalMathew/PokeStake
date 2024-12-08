@@ -5,20 +5,22 @@ import { useOkto, type OktoContextType, type User, type Portfolio } from "okto-s
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { ethers } from "ethers";
 import abi from "../lib/abi.json";
-
+;
 
 interface GlobalContextProps {
-  someValue: string; // Define the data or state to share via context
-  setSomeValue: (value: string) => void; // Define the function to update the state
   app: any;
+  createGame: () => Promise<void>;
+  endGame: () => Promise<void>;
 }
 
 const app = new App();
 
+// pnpm i
+
 export const GlobalContext = createContext<GlobalContextProps>({
-  someValue: "defaultValue",
-  setSomeValue: () => { },
   app: app,
+  createGame: async () => {},
+  endGame: async () => {},
 });
 
 export default function GlobalContextProvider({
@@ -36,6 +38,7 @@ export default function GlobalContextProvider({
   const [authToken, setAuthToken] = useState<string | null>(null);
 
   const networkName = "POLYGON_TESTNET_AMOY";
+  const contractAddress = "0xF805642EfCC637e1665585dF12370b4Cc437E6df";
 
   const handleGoogleLogin = async (credentialResponse: CredentialResponse) => {
     const idToken = credentialResponse.credential;
@@ -51,26 +54,11 @@ export default function GlobalContextProvider({
 
   const iface = new ethers.Interface(abi)
 
-  //     const readContractDataRemix=async () => {
-  //       const contractData = {
-  //           contractAddress: "0x035fC6B858592D6D6F8450932F53b7Ba1E98779a",
-  //           abi: abi[1],
-  //           args: undefined,
-  //       }
-  //       readContractData(networkName, contractData)
-  //         .then((result: any) => {
-  //             console.log('Contract data:', result);
-  //         })
-  //         .catch((error: any) => {
-  //             console.log('Error reading contract:', error);
-  //         });
-  // }
-
   const getAllMatches = async () => {
     try {
       // Call readContractData and wait for the result
       const contractData = {
-        contractAddress: "0xF805642EfCC637e1665585dF12370b4Cc437E6df",
+        contractAddress: contractAddress,
         abi: abi[7],
         args: undefined,
       }
@@ -92,7 +80,7 @@ export default function GlobalContextProvider({
     try {
       // Call readContractData and wait for the result
       const contractData = {
-        contractAddress: "0xF805642EfCC637e1665585dF12370b4Cc437E6df",
+        contractAddress: contractAddress,
         abi: abi[10],
         args: [matchId],
       }
@@ -114,7 +102,7 @@ export default function GlobalContextProvider({
       // Define the transaction data
       const transactionData = {
         from: from,
-        to: "0xF805642EfCC637e1665585dF12370b4Cc437E6df",
+        to: contractAddress,
         data: iface.encodeFunctionData("joinGame", [matchId]),
         value: ethers.parseEther(stakeAmount.toString()), // Ensure stakeAmount is a string or valid number
       };
@@ -162,13 +150,46 @@ export default function GlobalContextProvider({
 
 
   // Example state
+  const provider = new ethers.JsonRpcProvider(
+    "https://polygon-amoy-bor-rpc.publicnode.com"
+  );
+
+  // 2. Wallet setup using your private key
+  const privateKey = import.meta.env.VITE_PRIVATE_KEY as string;
+  const wallet = new ethers.Wallet(privateKey, provider);
+
+  // 3. Contract setup
+
+  const contract = new ethers.Contract(contractAddress, abi, wallet);
+
+  const createGame = async () => {
+    try {
+      const res = await contract.createGame();
+      console.log(res);
+
+      await res.wait();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const endGame = async () => {
+    try {
+      const res = await contract.endGame();
+      console.log(res);
+
+      await res.wait();
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <GlobalContext.Provider
       value={{
-        someValue,
-        setSomeValue,
         app,
+        createGame,
+        endGame,
       }}
     >
       {children}

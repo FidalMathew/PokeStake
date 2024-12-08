@@ -19,7 +19,11 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "emp-wasm-backend": "^0.1.0",
+<<<<<<< HEAD
     "ethers": "^6.13.4",
+=======
+    "ethers": "6",
+>>>>>>> 37ea52248787c607454433367f807942dc189259
     "formik": "^2.4.6",
     "lucide-react": "^0.468.0",
     "mpc-framework": "^0.1.2",
